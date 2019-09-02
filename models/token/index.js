@@ -81,6 +81,22 @@ class Token extends exser.Model {
       }
     });
   }
+
+  async removeByToken({token, session}) {
+    const object = await super.getOne({
+      filter: {value: token},
+      session,
+    });
+
+    await super.updateOne({
+      id: object._id,
+      body: {isDeleted: true},
+      session,
+      schema: 'delete',
+    });
+
+    return true;
+  }
 }
 
 module.exports = Token;

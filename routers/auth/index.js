@@ -24,10 +24,10 @@ module.exports = async (router, services) => {
     };
     try {
       let token = req.get('X-Token');
-      let auth = await userStore.auth({token, fields: 'token,user(*)'});
+      let auth = await userStore.auth({token, fields: 'value,user(*)'});
       if (auth) {
         req.session.user = auth.user;
-        req.session.token = auth.token;
+        req.session.token = auth.value;
         req.session.logEntryId = `log:${new ObjectID().toString()}`;
         if (auth.user.lang && !(req.query.lang || req.get('X-Lang'))) {
           req.session.acceptLang = auth.user.lang;
