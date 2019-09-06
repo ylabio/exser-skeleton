@@ -301,11 +301,7 @@ class User extends Model {
     if (session.token && session.token !== 'null') {
       /** @type Token */
       const tokenStorage = await this.storage.get('token');
-      await tokenStorage.deleteOne({
-        filter: {
-          value: session.token
-        }
-      });
+      await tokenStorage.removeByToken({token: session.token, session});
     }
     return true;
   }
