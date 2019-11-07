@@ -73,6 +73,7 @@ module.exports = {
   },
 
   spec: {
+    extend: require('./spec/index.js'),
     default: {
       info: {
         title: 'Roads',
