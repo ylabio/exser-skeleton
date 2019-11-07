@@ -1,12 +1,12 @@
 {
   "apps": [
     {
-      "name": "zm-server",
+      "name": "project-name",
       "script": "index.js",
-      "instances" : "max",
+      "instances" : "1",
       "exec_mode" : "cluster",
       "watch": false,
-      "node_args": "--harmony",
+      "node_args": "",
       "env": {
         "NODE_ENV": "production"
       }
