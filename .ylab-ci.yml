@@ -19,8 +19,8 @@ build:
 staging:
   stage: staging
   script:
-  - rsync -rlv --exclude=.git ./ /home/user/roads/server
-  - cd /home/user/roads/server
+  - rsync -rlv --exclude=.git ./ /home/user/project-name/server
+  - cd /home/user/project-name/server
   #- env HOME=/home/user pm2 restart process.json
   only:
   - develop
