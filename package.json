@@ -11,11 +11,11 @@
   },
   "dependencies": {
     "babel-eslint": "^10.0.3",
-    "eslint": "^6.6.0",
-    "exser": "^1.0.27",
+    "eslint": "^6.8.0",
+    "exser": "^1.0.30",
     "formidable": "^1.2.1",
     "moment": "^2.24.0",
-    "nodemailer": "^6.3.1"
+    "nodemailer": "^6.4.2"
   },
   "devDependencies": {
     "expect": "^24.9.0",
