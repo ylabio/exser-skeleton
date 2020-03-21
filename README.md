@@ -48,7 +48,7 @@ server {
         proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
         proxy_set_header    X-Forwarded-Proto   $scheme;
         proxy_set_header    X-Frame-Options     SAMEORIGIN;
-        proxy_pass http://127.0.0.1:8160;
+        proxy_pass http://127.0.0.1:8130;
     }
 
     # proxy websokets
@@ -58,7 +58,7 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
-        proxy_pass http://127.0.0.1:8162;
+        proxy_pass http://127.0.0.1:8132;
     }
 
     # files from backend

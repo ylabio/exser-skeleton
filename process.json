@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "project-name",
+      "name": "example",
       "script": "index.js",
       "instances" : "1",
       "exec_mode" : "cluster",

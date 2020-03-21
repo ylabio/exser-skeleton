@@ -19,8 +19,9 @@ build:
 staging:
   stage: staging
   script:
-  - rsync -rlv --exclude=.git ./ /home/user/project-name/server
-  - cd /home/user/project-name/server
-  #- env HOME=/home/user pm2 restart process.json
+  - rsync -rlv --exclude=.git ./ /home/user/example/server
+  - cd /home/user/example/server
+  - npm run init-example
+  - env HOME=/home/user pm2 restart process.json
   only:
   - develop

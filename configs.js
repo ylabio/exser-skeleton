@@ -6,7 +6,7 @@ module.exports = {
 
   'rest-api': {
     host: 'localhost',
-    port: 8160,
+    port: 8130,
     routers: require('./routers'),
     log: true,
     // Кроссдоменные запросы
@@ -14,11 +14,11 @@ module.exports = {
       /**
        * С каких хостов допустимы запросы
        * - false для отключения CORS
-       * - ['http://localhost:8000', /\.ysa\.com$/]
+       * - ['http://localhost:8000', /\.example\.com$/]
        * - '*' - все хосты
        */
       origin: [
-        'http://localhost:8161',
+        'http://localhost:8131',
       ]
     },
   },
@@ -26,7 +26,7 @@ module.exports = {
   storage: {
     db: {
       url: `mongodb://${process.env.MONGO_HOST || 'localhost'}:${process.env.MONGO_PORT || '27017'}`,
-      name: 'roads'
+      name: 'example'
     },
 
     models: require('./models'),
@@ -36,7 +36,7 @@ module.exports = {
         length: 8,
         chars: 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM123456678990-!=+&$#'
       },
-      authUrl: 'http://roads.ylab.io'
+      authUrl: 'http://example.front.ylab.io'
     },
 
     file: {
@@ -76,8 +76,8 @@ module.exports = {
     extend: require('./spec/index.js'),
     default: {
       info: {
-        title: 'Roads',
-        description: 'Roads REST API',
+        title: 'Example',
+        description: 'Example REST API',
         termsOfService: '',//url
         // contact: {
         // name: 'API Support',
