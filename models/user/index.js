@@ -113,6 +113,11 @@ class User extends Model {
         }
       },
 
+      // Схема просмотра списка
+      viewList: {
+
+      },
+
       // Схема авторизации
       signIn: {
         title: `${this._define.model.title}. Авторизация`,

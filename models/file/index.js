@@ -63,8 +63,12 @@ class File extends exser.Model {
         properties: {
           $unset: ['path'],
         }
-      }
+      },
 
+      // Схема просмотра списка
+      viewList: {
+
+      }
     });
   }
 

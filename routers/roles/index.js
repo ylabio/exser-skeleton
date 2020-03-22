@@ -8,7 +8,7 @@ module.exports = async (router, services) => {
   const roles = storage.get('role');
 
   /**
-   *
+   * Создание
    */
   router.post('/roles', {
     operationId: 'roles.create',
@@ -43,7 +43,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Выбор списка
    */
   router.get('/roles', {
     operationId: 'roles.list',
@@ -76,12 +76,7 @@ module.exports = async (router, services) => {
       },
     ],
     responses: {
-      200: spec.generate('success', {
-        items: {
-          type: 'array',
-          items: {$ref: '#/components/schemas/role.view'}
-        }
-      })
+      200: spec.generate('success', {$ref: '#/components/schemas/role.viewList'})
     }
   }, async (req) => {
     const filter = queryUtils.formattingSearch(req.query.search, {
@@ -109,6 +104,50 @@ module.exports = async (router, services) => {
     }
   });
 
+  /**
+   * Выбор одного
+   */
+  router.get('/roles/:id', {
+    operationId: 'roles.one',
+    summary: 'Выбор одного',
+    description: 'Роль по идентификатору',
+    tags: ['Roles'],
+    session: spec.generate('session.user', ['user']),
+    parameters: [
+      {
+        in: 'path',
+        name: 'id',
+        schema: {type: 'string'},
+        description: 'Идентификатор роли'
+      },
+      {
+        in: 'query',
+        name: 'fields',
+        description: 'Выбираемые поля',
+        schema: {type: 'string'}, example: '_id,name,title'
+      }
+    ],
+    responses: {
+      200: spec.generate('success', {$ref: '#/components/schemas/role.view'}),
+      404: spec.generate('error', 'Not Found', 404)
+    }
+  }, async (req/*, res*/) => {
+
+    const filter = queryUtils.formattingSearch({_id: req.params.id}, {
+      _id: {kind: 'ObjectId'},
+    });
+
+    return await roles.getOne({
+      filter,
+      session: req.session,
+      fields: queryUtils.parseFields(req.query.fields)
+    });
+
+  });
+
+  /**
+   * Редактирование
+   */
   router.put('/roles/:id', {
     operationId: 'roles.update',
     summary: 'Редактирование',
@@ -149,6 +188,9 @@ module.exports = async (router, services) => {
     });
   });
 
+  /**
+   * Удаление
+   */
   router.delete('/roles/:id', {
     operationId: 'roles.delete',
     summary: 'Удаление',

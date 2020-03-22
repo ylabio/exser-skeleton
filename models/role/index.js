@@ -42,6 +42,10 @@ class Role extends Model {
           $unset: []
         }
       },
+      // Схема просмотра списка
+      viewList: {
+
+      }
     });
   }
 }

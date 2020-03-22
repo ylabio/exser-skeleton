@@ -9,7 +9,7 @@ module.exports = async (router, services) => {
   const users = storage.get('user');
 
   /**
-   *
+   * Создание/регистрация
    */
   router.post('/users', {
     operationId: 'users.create',
@@ -48,7 +48,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Авторизация
    */
   router.post('/users/sign', {
     operationId: 'users.signIn',
@@ -101,7 +101,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Запрос пароля
    */
   router.post('/users/password', {
     operationId: 'users.restore',
@@ -129,7 +129,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Выход
    */
   router.delete('/users/sign', {
     operationId: 'users.signOut',
@@ -149,7 +149,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Выбор списка
    */
   router.get('/users', {
     //proxy: true,
@@ -201,12 +201,7 @@ module.exports = async (router, services) => {
       },
     ],
     responses: {
-      200: spec.generate('success', {
-        items: {
-          type: 'array',
-          items: {$ref: '#/components/schemas/user.view'}
-        }
-      })
+      200: spec.generate('success', {$ref: '#/components/schemas/user.viewList'})
     }
   }, async (req/*, res*/) => {
 
@@ -241,7 +236,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Выбор одного или "себя"
    */
   router.get('/users/:id', {
     operationId: 'users.one',
@@ -290,7 +285,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Редактирование
    */
   router.put('/users/:id', {
     operationId: 'users.update',
@@ -335,7 +330,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Удаление
    */
   router.delete('/users/:id', {
     operationId: 'users.delete',
@@ -373,6 +368,9 @@ module.exports = async (router, services) => {
     });
   });
 
+  /**
+   * Редактирование пароля
+   */
   router.put('/users/:id/password', {
     operationId: 'users.password',
     summary: 'Смена пароля',

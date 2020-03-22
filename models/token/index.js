@@ -15,6 +15,7 @@ class Token extends exser.Model {
       }),
       // Полная схема объекта
       model: this.spec.extend(parent.model, {
+        title: 'Токен',
         properties: {
           user: this.spec.generate('rel', {description: 'Пользователь', type: 'user'}),
           value: {type: 'string', description: 'Токен для идентификации'},
@@ -25,47 +26,36 @@ class Token extends exser.Model {
   }
 
   schemes() {
-    return Object.assign({}, super.schemes(), {
-
+    return this.spec.extend(super.schemes(), {
       // Схема создания
-      create: this.spec.extend(this._define.model, {
-        title: 'Сессия (создание)',
+      create: {
         properties: {
           $unset: [
-            '_id', '_type', 'dateCreate', 'dateUpdate', 'isDeleted', 'value'
+            'value'
           ]
         },
-      }),
-
+      },
       // Схема редактирования
-      update: this.spec.extend(this._define.model, {
-          title: 'Сессия (изменение)',
-          properties: {
-            $unset: [
-              '_id', '_type', 'dateCreate', 'dateUpdate', 'value'
-            ],
-            profile: {
-              $set: {
-                required: []
-              }
+      update: {
+        properties: {
+          $unset: [
+            'value'
+          ],
+          profile: {
+            $set: {
+              required: []
             }
-          },
-          $set: {
-            required: [],
-          },
-          $mode: 'update'
-        }
-      ),
-
+          }
+        },
+      },
       // Схема просмотра
-      view: this.spec.extend(this._define.model, {
-          title: 'Сессия (просмотр)',
-          $set: {
-            required: []
-          },
-          $mode: 'view'
-        }
-      ),
+      view: {
+
+      },
+      // Схема просмотра списка
+      viewList: {
+
+      }
     });
   }
 

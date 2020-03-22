@@ -9,7 +9,7 @@ module.exports = async (router, services) => {
   const files = storage.get('file');
 
   /**
-   *
+   * Создание/загрузка
    */
   router.post('/files', {
     operationId: 'files.upload',
@@ -75,7 +75,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Выбор списка
    */
   router.get('/files', {
     operationId: 'files.list',
@@ -108,12 +108,7 @@ module.exports = async (router, services) => {
       }
     ],
     responses: {
-      200: spec.generate('success', {
-        items: {
-          type: 'array',
-          items: {$ref: '#/components/schemas/file.view'}
-        }
-      })
+      200: spec.generate('success', {$ref: '#/components/schemas/file.viewList'})
     }
   }, async (req/*, res*/) => {
 
@@ -134,7 +129,7 @@ module.exports = async (router, services) => {
   });
 
   /**
-   *
+   * Выбор одного
    */
   router.get('/files/:id', {
     operationId: 'files.one',
@@ -169,6 +164,43 @@ module.exports = async (router, services) => {
 
     return await files.getOne({
       filter,
+      session: req.session,
+      fields: queryUtils.parseFields(req.query.fields)
+    });
+  });
+
+  /**
+   * Удаление
+   */
+  router.delete('/files/:id', {
+    operationId: 'files.delete',
+    summary: 'Удаление',
+    description: 'Удаление файла',
+    session: spec.generate('session.user', ['user']),
+    tags: ['Files'],
+    parameters: [
+      {
+        in: 'path',
+        name: 'id',
+        description: 'Идентификатор файла',
+        schema: {type: 'string'}
+      },
+      {
+        in: 'query',
+        name: 'fields',
+        description: 'Выбираемые поля',
+        schema: {type: 'string'},
+        example: '_id'
+      }
+    ],
+    responses: {
+      200: spec.generate('success', true),
+      404: spec.generate('error', 'Not Found', 404)
+    }
+  }, async (req) => {
+
+    return await files.deleteOne({
+      id: req.params.id,
       session: req.session,
       fields: queryUtils.parseFields(req.query.fields)
     });
