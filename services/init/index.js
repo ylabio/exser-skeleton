@@ -6,7 +6,7 @@ class Init {
     this.config = config;
     this.services = services;
     this.s = {
-      storage: await this.services.getStorage(this.config.mode),
+      storage: await this.services.getStorage({mode: this.config.mode}),
     };
     this.data = {};
     return this;

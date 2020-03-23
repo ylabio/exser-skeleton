@@ -5,21 +5,21 @@ module.exports = class MyServices extends Services {
   /**
    * @returns {Promise.<Mailer>}
    */
-  async getMail() {
-    return this.import(__dirname + '/mail');
+  async getMail(params) {
+    return this.import(__dirname + '/mail', params);
   }
 
   /**
    * @returns {Promise<Init>}
    */
-  async getInit() {
-    return this.import(__dirname + '/init');
+  async getInit(params) {
+    return this.import(__dirname + '/init', params);
   }
 
   /**
    * @returns {Promise<InitExample>}
    */
-  async getInitExample() {
-    return this.import(__dirname + '/init-example');
+  async getInitExample(params) {
+    return this.import(__dirname + '/init-example', params);
   }
 };
