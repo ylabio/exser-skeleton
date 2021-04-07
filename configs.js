@@ -26,7 +26,7 @@ module.exports = {
   storage: {
     db: {
       url: `mongodb://${process.env.MONGO_HOST || 'localhost'}:${process.env.MONGO_PORT || '27017'}`,
-      name: 'example'
+      name: 'example2'
     },
 
     models: require('./models'),
@@ -137,6 +137,12 @@ module.exports = {
       //   url: '/api/v1/docs/source.json'
       // },
     }
+  },
+
+  logs: {
+    unsetFields: [
+      'password'
+    ]
   },
 
   tasks: {

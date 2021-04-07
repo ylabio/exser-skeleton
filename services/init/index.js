@@ -13,8 +13,10 @@ class Init {
   }
 
   async start(){
+    console.log('Init start');
     await this.initUsersAdmin();
     await this.initUsers();
+    console.log('Init completed');
   }
 
   async initUsersAdmin() {

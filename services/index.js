@@ -22,4 +22,12 @@ module.exports = class MyServices extends Services {
   async getInitExample() {
     return this.import(__dirname + '/init-example');
   }
+
+  /**
+   * @returns {Promise<RestAPI>}
+   */
+  async getRestApi(params) {
+    return this.import(__dirname + '/rest-api', params);
+  }
+
 };
