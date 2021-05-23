@@ -1,51 +1,21 @@
-const Model = require('exser').Model;
+const Base = require("../base");
+const mc = require('merge-change');
+const {schema} = require('exser').utils;
 
-class Role extends Model {
+class Role extends Base {
 
   define() {
-    const parent = super.define();
-    return {
-      collection: 'role',
-      indexes: this.spec.extend(parent.indexes, {
-        //relativeId: [{'relative._id': 1}],
-      }),
-      model: this.spec.extend(parent.model, {
-        title: 'Роль',
-        properties: {
-          name: {type: 'string', description: 'Кодовое название', minLength: 2, maxLength: 200},
-          title: this.spec.generate('i18n', {description: 'Заголовок', minLength: 2, maxLength: 200}),
-          description: this.spec.generate('i18n', {description: 'Описание', default: '', maxLength: 100}),
-          priceClient: {type: 'number', description: 'Ставка клиента', default: 1200}
-        },
-        required: ['name', 'title'],
-      })
-    };
-  }
-
-  schemes() {
-    return this.spec.extend(super.schemes(), {
-      // Схема создания
-      create: {
-        properties: {
-          $unset: []
-        },
+    return mc.merge(super.define(), {
+      title: 'Роль',
+      indexes: {},
+      // Свойства модели в JSONSchema. Используются функции для генерации фрагментов схем.
+      properties: {
+        name: schema.string({description: 'Кодовое название', minLength: 2, maxLength: 200}),
+        title: schema.stringi18n({description: 'Заголовок', minLength: 2, maxLength: 200}),
+        description: schema.stringi18n({description: 'Описание', default: '', maxLength: 100}),
+        // Доп поля про доступы
       },
-      // Схема редактирования
-      update: {
-        properties: {
-          $unset: [],
-        }
-      },
-      // Схема просмотра
-      view: {
-        properties: {
-          $unset: []
-        }
-      },
-      // Схема просмотра списка
-      viewList: {
-
-      }
+      required: ['name', 'title'],
     });
   }
 }

@@ -1,113 +1,137 @@
-const {objectUtils} = require('exser').utils;
+const InitExser = require("exser/services/init");
+const {objects} = require('exser').utils;
+const mc = require('merge-change');
 
-class Init {
+class Init extends InitExser {
 
   async init(config, services) {
-    this.config = config;
-    this.services = services;
-    this.s = {
-      storage: await this.services.getStorage(this.config.mode),
-    };
-    this.data = {};
+    await super.init(config, services);
+    this.storage = await this.services.getStorage();
+    this.sessions = await this.services.getSessions();
     return this;
   }
 
-  async start(){
+  async start(params = {}) {
     console.log('Init start');
+    if (params.mode === 'clear') {
+      console.log('- clear storage');
+      await this.storage.clearStorage();
+    }
     await this.initUsersAdmin();
-    await this.initUsers();
+    //await this.initUsers();
     console.log('Init completed');
   }
 
+  /**
+   * Создание админа
+   * @returns {Promise<InitState>}
+   */
   async initUsersAdmin() {
-    const type = 'user';
-    if (!this.data['user-admin']) {
+    const state = this.getState('users-admin');
+    if (state.isEmpty()) {
       const roles = await this.initRoles();
+      const session = await this.initSessionRoot();
       let body = {
-        _key: 'test-user',
         username: 'test',
-        email: 'test@example.com',
+        email: 'teSt@example.com',
         phone: '+70000000000',
         password: '123456',
-        role: {_id: roles.find(s => s.name === 'admin')._id},
+        role: {_id: roles.getBy('name', 'admin')._id},
         profile: {
           name: 'AdminName1',
           surname: 'AdminSurname'
         }
       };
-
-      let admin = await this.s.storage.get(type).upsertOne({
-        filter: {_key: body._key}, body, session: {}
-      });
-
-      // await this.s.storage.get('user').updateStatus({
-      //   id: admin._id.toString(),
-      //   body: {status: 'confirm'},
-      //   session: {user: admin}
-      // });
-      this.data['user-admin'] = objectUtils.merge(body, admin);
+      state.append(
+        await this.storage.get('user').upsertOne({
+          filter: {username: body.username}, body, session
+        })
+      );
     }
-    return this.data['user-admin'];
+    return state;
   }
 
-  async initSession() {
-    const admin = await this.initUsersAdmin();
-    return {
-      user: admin
-    };
-  }
-
+  /**
+   * Создание ролей
+   * @returns {Promise<InitState>}
+   */
   async initRoles() {
-    const type = 'role';
-    if (!this.data[type]) {
+    const state = this.getState('roles');
+    if (state.isEmpty()) {
+      const session = await this.initSessionRoot();
       let items = [
         {name: 'admin', title: {ru: 'Админ', en: 'Admin'}},
         {name: 'user', title: {ru: 'Пользователь', en: 'User'}}
       ];
-      this.data[type] = [];
       for (let body of items) {
-        this.data[type].push(objectUtils.merge(body, await this.s.storage.get(type).upsertOne({
-          filter: {name: body.name},
-          body
-        })));
+        state.append(
+          await this.storage.get('role').upsertOne({
+            filter: {name: body.name}, body, session
+          })
+        );
       }
     }
-    return this.data[type];
+    return state;
   }
 
   /**
-   *
-   * @returns {Promise<Array>}
+   * Создание первичных пользователей
+   * @returns {Promise<InitState>}
    */
   async initUsers() {
-    const type = 'user';
-    if (!this.data[type]) {
+    const state = this.getState('users');
+    if (state.isEmpty()) {
       const roles = await this.initRoles();
-      const session = await this.initSession();
+      const session = await this.initSessionAdmin();
       let items = [
         // {
         //   _key: 'user1',
         //   email: 'petya@example.com',
         //   phone: '+79993332211',
         //   password: 'password',
-        //   username: 'petya',
-        //   role: {_id: roles.find(s => s.name === 'middle-js')._id},
+        //   username: 'petr',
+        //   role: {_id: roles.getBy('name', 'user')._id},
         //   profile: {
         //     name: 'Владимир',
         //     surname: 'Шестаков'
         //   }
         // },
       ];
-      this.data[type] = [];
       for (let body of items) {
-        this.data[type].push(objectUtils.merge(body, await this.s.storage.get(type).upsertOne({
-          filter: {_key: body._key},
-          body,
-          session
-        })));
+        state.append(
+          await this.storage.get('user').upsertOne({
+            filter: {_key: body._key},
+            body,
+            session
+          })
+        );
       }
     }
-    return this.data[type];
+    return state;
+  }
+
+  /**
+   * Сессия с админом
+   * @returns {Promise<SessionState>}
+   */
+  async initSessionAdmin() {
+    if (!this.sessionState){
+      this.sessionState = this.sessions.create();
+      this.sessionState.user = await this.initUsersAdmin();
+    }
+    return this.sessionState;
+  }
+
+  /**
+   * Сессия без контроля доступа
+   * @returns {Promise<SessionState>}
+   */
+  async initSessionRoot() {
+    if (!this.sessionStateRoot){
+      this.sessionStateRoot = this.sessions.create();
+      this.sessionStateRoot.access = false;
+    }
+    return this.sessionStateRoot;
   }
 }
 

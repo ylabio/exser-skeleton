@@ -1,9 +1,13 @@
-const {queryUtils} = require('exser').utils;
+const {query, schema} = require('exser').utils;
 const formidable = require('formidable');
 
 module.exports = async (router, services) => {
 
+  /** @type {Spec} */
   const spec = await services.getSpec();
+  /** @type {Array} Тег для роутеров */
+  const tags = spec.setTags({name: 'Files', description: 'Файлы'});
+  /** @type {Storage} */
   const storage = await services.getStorage();
   /** @type {File} */
   const files = storage.get('file');
@@ -12,34 +16,29 @@ module.exports = async (router, services) => {
    * Создание/загрузка
    */
   router.post('/files', {
-    operationId: 'files.upload',
     summary: 'Загрузка и создание',
-    description: 'Загрузка файла на сервер. Используется потоковая загрузка с прогрессом загрузки (HTML5)',
-    tags: ['Files'],
-    session: spec.generate('session.user', ['user']),
-    consumes: ['multipart/form-data'],
+    action: 'file.upload',
+    description: 'Загрузка файла на сервер. Используется потоковая загрузка с прогрессом (HTML5)',
+    tags: tags,
+    requestBody: schema.body({
+      description: 'Файл для загрузки',
+      mediaType: 'multipart/form-data',
+      schema: schema.object({
+        properties: {
+          file: schema.string({format: 'binary'})
+        }
+      })
+    }),
     parameters: [
-      {
-        in: 'formData',
-        name: 'file',
-        schema: {type: 'file'},
-        description: 'Файл для загрузки'
-      },
-      {
-        in: 'query',
-        name: 'fields',
-        description: 'Выбираемые поля',
-        schema: {type: 'string'},
-        example: '*'
-      }
+      schema.paramFields({}),
+      schema.paramLang({}),
     ],
     responses: {
-      201: spec.generate('success', {$ref: '#/components/schemas/file.view'}),
-      400: spec.generate('error', 'Bad Request', 400)
+      201: schema.bodyResult({schema: {$ref: '#/components/schemas/storage.test'}}),
+      400: schema.bodyError({description: 'Bad Request'})
     }
   }, async (req, res, next) => {
     return new Promise((resolve, reject) => {
-
       const form = new formidable.IncomingForm();
       form.parse(req);
       form.onPart = (part) => {
@@ -51,8 +50,7 @@ module.exports = async (router, services) => {
               originalName: part.filename,
               mime: part.mime
             },
-            session: req.session,
-            fields: queryUtils.parseFields(req.query.fields)
+            session: req.session
           }).then(object => {
             resolve(object);
             //console.log('upload resolve', object);
@@ -78,94 +76,72 @@ module.exports = async (router, services) => {
    * Выбор списка
    */
   router.get('/files', {
-    operationId: 'files.list',
+    action: 'file.find.many',
     summary: 'Выбор списка (поиск)',
     description: 'Список файлов',
-    tags: ['Files'],
-    session: spec.generate('session.user', ['user']),
+    tags,
     parameters: [
-      {
-        in: 'query',
-        name: 'search[kind]',
-        schema: {type: 'string', enum: ['video', 'image', 'other']},
+      schema.paramSearch({
+        name: 'kind', schema: {type: 'string', enum: ['video', 'image', 'other']},
         description: 'Поиск по типу файла'
-      },
-      {
-        in: 'query',
-        name: 'search[status]',
-        schema: {type: 'string', enum: ['loading', 'loaded', 'error']},
+      }),
+      schema.paramSearch({
+        name: 'status', schema: {type: 'string', enum: ['loading', 'loaded', 'error']},
         description: 'Поиск по статусу загрузки'
-      },
-      {$ref: '#/components/parameters/sort'},
-      {$ref: '#/components/parameters/limit'},
-      {$ref: '#/components/parameters/skip'},
-      {
-        in: 'query',
-        name: 'fields',
-        description: 'Выбираемые поля',
-        schema: {type: 'string'},
-        example: '*'
-      }
+      }),
+      schema.paramFields({}),
+      schema.paramLimit({}),
+      schema.paramSkip({}),
+      schema.paramSort({}),
+      schema.paramLang({}),
     ],
     responses: {
-      200: spec.generate('success', {$ref: '#/components/schemas/file.viewList'})
+      200: schema.bodyResultList({schema: {$ref: '#/components/schemas/storage.file'}})
     }
   }, async (req/*, res*/) => {
-
-    const filter = queryUtils.formattingSearch(req.query.search, {
-      'kind': {kind: 'const', fields: ['kind']},
-      'status': {kind: 'const', fields: ['status']}(
-      )
+    // Фильтр для выборки
+    const filter = query.makeFilter(req.query.search, {
+      kind: {cond: 'const', fields: ['kind'], type: 'string'},
+      status: {cond: 'const', fields: ['status'], type: 'string'},
     });
-
-    return await files.getList({
-      filter,
-      sort: queryUtils.formattingSort(req.query.sort),
-      limit: req.query.limit,
-      skip: req.query.skip,
-      session: req.session,
-      fields: queryUtils.parseFields(req.query.fields)
-    });
+    // Выборка с фильтром
+    return {
+      items: await files.findMany({
+        filter,
+        sort: query.parseSort(req.query.sort),
+        limit: req.query.limit,
+        skip: req.query.skip,
+        session: req.session,
+      }),
+      count: query.inFields(req.query.fields, 'items.count')
+        ? await files.findCount({filter, session: req.session})
+        : null
+    };
   });
 
   /**
    * Выбор одного
    */
   router.get('/files/:id', {
-    operationId: 'files.one',
+    action: 'file.find.one',
     summary: 'Выбор одного',
     description: 'Выбор файла по идентификатору',
-    tags: ['Files'],
-    session: spec.generate('session.user', ['user']),
+    tags,
     parameters: [
-      {
-        in: 'path',
-        name: 'id',
-        description: 'Идентификатор файла',
-        schema: {type: 'string'}
-      },
-      {
-        in: 'query',
-        name: 'fields',
-        description: 'Выбираемые поля',
-        schema: {type: 'string'},
-        example: '*'
-      }
+      schema.param({name: 'id', in: 'path', description: 'Идентификатор файла'}),
+      schema.paramFields({}),
+      schema.paramLang({}),
     ],
     responses: {
-      200: spec.generate('success', {$ref: '#/components/schemas/file.view'}),
-      404: spec.generate('error', 'Not Found', 404)
+      200: schema.bodyResult({schema: {$ref: '#/components/schemas/storage.file'}}),
+      404: schema.bodyError({description: 'Not Found'})
     }
   }, async (req/*, res/*, next*/) => {
-
-    const filter = queryUtils.formattingSearch({_id: req.params.id}, {
-      '_id': {kind: 'ObjectId'}
-    });
-
-    return await files.getOne({
-      filter,
-      session: req.session,
-      fields: queryUtils.parseFields(req.query.fields)
+    return await files.findOne({
+      filter: query.makeFilter({}, {
+        _id: {value: req.params.id, cond: 'eq', type: 'ObjectId'}
+      }),
+      session: req.session
     });
   });
 
@@ -173,36 +149,26 @@ module.exports = async (router, services) => {
    * Удаление
    */
   router.delete('/files/:id', {
-    operationId: 'files.delete',
+    action: 'file.delete',
     summary: 'Удаление',
     description: 'Удаление файла',
-    session: spec.generate('session.user', ['user']),
-    tags: ['Files'],
+    tags,
     parameters: [
-      {
-        in: 'path',
-        name: 'id',
-        description: 'Идентификатор файла',
-        schema: {type: 'string'}
-      },
-      {
-        in: 'query',
-        name: 'fields',
-        description: 'Выбираемые поля',
-        schema: {type: 'string'},
-        example: '_id'
-      }
+      schema.param({name: 'id', in: 'path', description: 'Идентификатор файла'}),
+      schema.paramFields({}),
+      schema.paramLang({}),
     ],
     responses: {
-      200: spec.generate('success', true),
-      404: spec.generate('error', 'Not Found', 404)
+      200: schema.bodyResult({schema: {$ref: '#/components/schemas/storage.file'}}),
+      404: schema.bodyError({description: 'Not Found'})
     }
   }, async (req) => {
 
     return await files.deleteOne({
-      id: req.params.id,
-      session: req.session,
-      fields: queryUtils.parseFields(req.query.fields)
+      filter: query.makeFilter({}, {
+        _id: {value: req.params.id, cond: 'eq', type: 'ObjectId'}
+      }),
+      session: req.session
     });
   });
 };

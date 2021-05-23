@@ -1,80 +1,45 @@
+const Base = require("../base");
+const mc = require('merge-change');
 const exser = require('exser');
-const {errors, stringUtils} = exser.utils;
+const {errors, strings, schema} = exser.utils;
 const fs = require('fs');
 const path = require('path');
 
-class File extends exser.Model {
+class File extends Base {
 
   define() {
-    const parent = super.define();
-    return {
-      collection: 'file',
-      indexes: this.spec.extend(parent.indexes, {
-        //title: [{'title': 1}, {'unique': true, partialFilterExpression: {isDeleted: false}}],
-      }),
-      // Полная схема объекта
-      model: this.spec.extend(parent.model, {
-          title: 'Файл',
-          properties: {
-            url: {type: 'string', example: 'http://example.com/file.png'},
-            name: {type: 'string', default: ''},
-            kind: {type: 'string', default: 'other'},
-            mime: {type: 'string', default: ''},
-            extension: {type: 'string', default: ''},
-            originalName: {type: 'string', default: ''},
-            title: {type: 'string', default: ''},
-            description: {type: 'string', default: ''},
-            path: {type: 'string', default: ''},
-            // sets: {
-            //   type: 'object',
-            //   patternProperties: {
-            //     '^.+$': this.spec.generate('rel', {description: 'Файл', type: 'file'})
-            //   },
-            //   default: {},
-            //   description: 'Производные файлы, например, превью',
-            //   additionalProperties: true
-            // }
-          },
-          required: ['url'],
-          additionalProperties: false
-        }
-      )
-    };
-  }
-
-  schemes() {
-    return this.spec.extend(super.schemes(), {
-      // Схема создания
-      create: {
-        properties: {
-          $unset: ['path'],
-        }
+    return mc.merge(super.define(), {
+      title: 'Файл',
+      indexes: {},
+      // Свойства модели в JSONSchema. Используются функции для генерации фрагментов схем.
+      properties: {
+        url: schema.string({
+          description: 'Публичная ссылка на файл',
+          example: 'http://example.com/file.png'
+        }),
+        name: schema.string({description: 'Название файла из пути на него', defaults: ''}),
+        kind: schema.string({
+          description: 'Классификация файла, например image',
+          defaults: 'other'
+        }),
+        mime: schema.string({description: 'MIME тип файла', defaults: ''}),
+        ext: schema.string({description: 'Расширение файла', defaults: ''}),
+        originalName: schema.string({description: 'оригинальное название файла', defaults: ''}),
+        title: schema.string({description: 'Название файла для отображения', defaults: ''}),
+        description: schema.string({description: 'Описание к файлу', defaults: ''}),
+        path: schema.string({description: 'Путь на сервере к файлу', defaults: ''}),
+        // sets: {
+        //   type: 'object',
+        //   patternProperties: {
+        //     '^.+$': schema.rel({model: 'file', description: 'Пресет файла'})
+        //   },
+        //   default: {},
+        //   description: 'Производные файлы, например, превью',
+        //   additionalProperties: true
+        // }
       },
-
-      // Схема редактирования
-      update: {
-        properties: {
-          $unset: ['path']
-        },
-      },
-
-      // Схема просмотра
-      view: {
-        properties: {
-          $unset: ['path'],
-        }
-      },
-
-      // Схема просмотра списка
-      viewList: {
-
-      }
+      required: ['url'],
     });
-  }
-
-  async init(config, services) {
-    await super.init(config, services);
-    return this;
   }
 
   getKindByMimeExt(mime, ext) {
@@ -109,7 +74,7 @@ class File extends exser.Model {
         message: 'Not supported file extension or mime'
       }]);
     }
-    const secret = stringUtils.random(12, 'abcdefghijklmnopqrstuvwxyz0123456789');
+    const secret = strings.random(12, 'abcdefghijklmnopqrstuvwxyz0123456789');
     const _id = new exser.ObjectID(); // id для сущности и url файла
     body.name = `${_id.toString()}-${secret}.${body.extension}`;
     body.url = `${this.config.url}/${body.name}`;
@@ -130,11 +95,11 @@ class File extends exser.Model {
         });
       });
       result = await this.createOne({
-        body, session, fields,
-        prepare: (parentPrepare, object) => {
-          parentPrepare(object);
+        body, session,
+        validate: async ({object, source, session}) => {
           object._id = _id;
           object.path = pathFile;
+          return object;
         }
       });
     } catch (e) {

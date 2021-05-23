@@ -1,0 +1,2 @@
+{"_type":"role","_deleted":false,"dateCreate":"2021-04-25T07:21:02.742Z","dateUpdate":"2021-04-25T07:21:02.742Z","name":"admin","title":{"ru":"Админ","en":"Admin"}}
+{"_type":"role","_deleted":false,"dateCreate":"2021-04-25T07:21:02.802Z","dateUpdate":"2021-04-25T07:21:02.802Z","name":"user","title":{"ru":"Пользователь","en":"User"}}

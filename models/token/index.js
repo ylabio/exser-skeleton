@@ -1,91 +1,45 @@
-const exser = require('exser');
-const {errors, stringUtils} = exser.utils;
+const Base = require("../base");
+const mc = require('merge-change');
+const {strings, schema} = require('exser').utils;
 
-class Token extends exser.Model {
+class Token extends Base {
 
   define() {
-    const parent = super.define();
-    return {
-      collection: 'token',
-      indexes: this.spec.extend(parent.indexes, {
+    return mc.merge(super.define(), {
+      title: 'Токен авторизации',
+      indexes: {
         value: [{'value': 1}, {
           'unique': true,
           partialFilterExpression: {phone: {$gt: ''}, isDeleted: false}
         }]
-      }),
-      // Полная схема объекта
-      model: this.spec.extend(parent.model, {
-        title: 'Токен',
-        properties: {
-          user: this.spec.generate('rel', {description: 'Пользователь', type: 'user'}),
-          value: {type: 'string', description: 'Токен для идентификации'},
-        },
-        required: ['user']
-      })
-    };
-  }
-
-  schemes() {
-    return this.spec.extend(super.schemes(), {
-      // Схема создания
-      create: {
-        properties: {
-          $unset: [
-            'value'
-          ]
-        },
       },
-      // Схема редактирования
-      update: {
-        properties: {
-          $unset: [
-            'value'
-          ],
-          profile: {
-            $set: {
-              required: []
-            }
-          }
-        },
+      // Свойства модели в JSONSchema. Используются функции для генерации фрагментов схем.
+      properties: {
+        user: schema.rel({model: 'user', description: 'Пользователь'}),
+        value: schema.string({description: 'Токен для идентификации'}),
       },
-      // Схема просмотра
-      view: {
-
-      },
-      // Схема просмотра списка
-      viewList: {
-
-      }
+      required: ['user']
     });
   }
 
-  async createOne({body, view = true, fields = {'*': 1}, session, validate, prepare, schema = 'create'}) {
-    return super.createOne({
-      body, view, fields, session, validate, schema,
-      prepare: async (parentPrepare, object) => {
-        const prepareDefault = async (object) => {
-          parentPrepare(object);
-          object.value = await stringUtils.generateToken();
-        };
-        await (prepare ? prepare(prepareDefault, object) : prepareDefault(object));
-      }
-    });
+  async createOne({body, session, validate}) {
+    if (!body.value) {
+      body.value = await strings.generateToken();
+    }
+    return super.createOne({body, session, validate});
   }
 
-  async removeByToken({token, session}) {
-    const object = await super.getOne({
-      filter: {value: token},
+  /**
+   * Удаление токена по значению
+   * @param value {String}
+   * @param session {SessionState|Object}
+   * @returns {Promise<Object>}
+   */
+  async removeByValue({value, session}) {
+    return this.deleteOne({
+      filter: {value},
       session,
     });
-
-    await super.updateOne({
-      id: object._id,
-      body: {isDeleted: true},
-      session,
-      schema: 'delete',
-    });
-
-    return true;
   }
 }
 

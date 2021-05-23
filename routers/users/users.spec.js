@@ -1,4 +1,4 @@
-const {arrayUtils} = require('exser').utils;
+const {arrays} = require('exser').utils;
 
 describe('User API', () => {
   let s = {};
@@ -62,7 +62,7 @@ describe('User API', () => {
   describe('Смена паролей', () => {
 
     test('Отправка одинаковых паролей', async () => {
-      const user = arrayUtils.random(data.users);
+      const user = arrays.random(data.users);
 
       const auth = await s.users.signIn({
         body: {
@@ -95,7 +95,7 @@ describe('User API', () => {
     });
 
     test('Отправка невалидного старого пароля', async () => {
-      const user = arrayUtils.random(data.users);
+      const user = arrays.random(data.users);
 
       const auth = await s.users.signIn({
         body: {
@@ -128,7 +128,7 @@ describe('User API', () => {
     });
 
     test('Отправка невалидного нового пароля', async () => {
-      const user = arrayUtils.random(data.users);
+      const user = arrays.random(data.users);
 
       const auth = await s.users.signIn({
         body: {
@@ -161,7 +161,7 @@ describe('User API', () => {
     });
 
     test('Успешная смена пароля', async () => {
-      const user = arrayUtils.random(data.users);
+      const user = arrays.random(data.users);
 
       //const user = await s.users.getOne({email: userData.login});
       const auth = await s.users.signIn({

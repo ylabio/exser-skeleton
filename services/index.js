@@ -1,9 +1,9 @@
-const {Services} = require('exser');
+const Services = require('exser').Services;
 
 module.exports = class MyServices extends Services {
 
   /**
-   * @returns {Promise.<Mailer>}
+   * @returns {Promise.<Mail>}
    */
   async getMail() {
     return this.import(__dirname + '/mail');
@@ -17,10 +17,10 @@ module.exports = class MyServices extends Services {
   }
 
   /**
-   * @returns {Promise<InitExample>}
+   * @returns {Promise<InitMock>}
    */
-  async getInitExample() {
-    return this.import(__dirname + '/init-example');
+  async getInitMock() {
+    return this.import(__dirname + '/init-mock');
   }
 
   /**
@@ -28,6 +28,13 @@ module.exports = class MyServices extends Services {
    */
   async getRestApi(params) {
     return this.import(__dirname + '/rest-api', params);
+  }
+
+  /**
+   * @returns {Promise<Auth>}
+   */
+  async getAuth(params) {
+    return this.import(__dirname + '/auth', params);
   }
 
 };

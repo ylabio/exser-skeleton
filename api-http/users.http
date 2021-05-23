@@ -1,5 +1,5 @@
 ###
-# Auth
+# SignIn
 
 POST {{baseUrl}}/users/sign?fields=*
 Content-Type: application/json
@@ -10,16 +10,31 @@ Content-Type: application/json
 }
 
 ###
+# GET current by XToken
+
+GET {{baseUrl}}/users/self?fields=*
+Content-Type: application/json
+X-Token: {{tokenAdmin}}
+
+###
+# GET list
+
+GET {{baseUrl}}users?fields=_id,email,profile(*)
+X-Token:{{tokenAdmin}}
+Content-Type: application/json
+
+
+###
 # GET by id
 
-GET {{baseUrl}}users/5d0176ac7dd93011d8159d51?fields=_id,email,profile(*)
+GET {{baseUrl}}users/6082e47fe646400a3c62d3b6?fields=_id,email,profile(*)
 X-Token:{{tokenAdmin}}
 Content-Type: application/json
 
 ###
 # Change password
 
-PUT {{baseUrl}}users/5d0176ac7dd93011d8159d51/password
+PUT {{baseUrl}}users/6082e47fe646400a3c62d3b6/password
 X-Token:{{tokenAdmin}}
 Content-Type: application/json
 
@@ -42,11 +57,6 @@ Content-Type: application/json
   }
 }
 
-###
-# GET current
 
-GET {{baseUrl}}/users/self?fields=*
-Content-Type: application/json
-X-Token: {{tokenAdmin}}
 
 ###

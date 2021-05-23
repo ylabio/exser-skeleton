@@ -1,0 +1,1 @@
+{"_type":"user","_deleted":false,"dateCreate":"2021-04-25T07:21:02.803Z","dateUpdate":"2021-04-25T07:21:02.803Z","username":"test","email":"TEST@example.com","phone":"+70000000000","password":"e10adc3949ba59abbe56e057f20f883e","role":{"_type":"role","name":"admin"},"profile":{"name":"AdminName1","surname":"AdminSurname","middlename":"","avatar":{},"phone":"","birthday":""}}
