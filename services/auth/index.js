@@ -55,10 +55,11 @@ class Auth extends Service {
    * @param session
    * @returns {Promise<*>}
    */
-  async registration({body, session}){
+  async registration({body, session}) {
+    session.override({access: false});
     let user = await this.storage.get('user').createOne({body, session});
-    console.log('Password', body.password);
     await this.notifyReg({user, password: body.password});
+    session.revert();
     return user;
   }
 
@@ -72,7 +73,7 @@ class Auth extends Service {
     // Валидация тела запроса
     const form = await this.specShortcut.validate('signIn', body, {session});
     // Без контроля доступа (контроль на уровне роутера)
-    session.change({access: false});
+    session.override({access: false});
     // Сверка старого пароля поиском п нему юзера
     let passwordHash = strings.hash(form.password);
     let user = await this.storage.get('user').findOne({
@@ -110,7 +111,7 @@ class Auth extends Service {
       session
     });
 
-    session.restore();
+    session.revert();
 
     return {
       user: user,
@@ -120,14 +121,16 @@ class Auth extends Service {
 
   /**
    * Выход (удаление токена)
-   * @param session
+   * @param session {SessionState}
    * @returns {Promise.<boolean>}
    */
   async signOut({session}) {
     if (session.token && session.token !== 'null') {
+      session.override({access: false});
       /** @type Token */
       const tokenStorage = await this.storage.get('token');
-      await tokenStorage.removeByToken({token: session.token, session});
+      await tokenStorage.removeByValue({value: session.token, session});
+      session.revert();
     }
     return true;
   }
@@ -141,6 +144,7 @@ class Auth extends Service {
   async signInByToken({token, session}) {
     let result = false;
     if (token && token !== 'null') {
+      session.override({access: false});
       /** @type Token */
       const tokenStorage = await this.storage.get('token');
       result = await tokenStorage.findOne({
@@ -153,6 +157,7 @@ class Auth extends Service {
         },
         session
       });
+      session.revert();
     }
     return result;
   }
@@ -166,6 +171,7 @@ class Auth extends Service {
    */
   async changePassword({filter, body, session}) {
     await this.specShortcut.validate('changePassword', body, {session});
+    session.override({access: false});
     const user = await this.storage.get('user').findOne({filter, session});
 
     if (body.oldPassword === body.newPassword) {
@@ -186,6 +192,7 @@ class Auth extends Service {
       });
     }
     await this.storage.get('user').updateOne({filter, body: {password: body.newPassword}, session});
+    session.revert();
     return true;
   }
 
@@ -197,7 +204,7 @@ class Auth extends Service {
    */
   async restore({body, session}) {
     let form = await this.specShortcut.validate('restore', body, {session});
-
+    session.override({access: false});
     let user = await this.storage.get('user').findOne({filter: {email: form.login}, session});
     if (!user) {
       throw new errors.NotFound({}, 'User not found');
@@ -216,6 +223,7 @@ class Auth extends Service {
       text: `Добрый день!\n\nВы запросили новый пароль: ${password}\n\n` +
         `${this.config.siteUrl}`
     });
+    session.revert();
     return true;
   }
 

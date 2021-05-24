@@ -136,9 +136,12 @@ module.exports = {
         key: 3,
         session: {'session.user._deleted': false},
         actions: {
+          // Полные права на все действия
           '*': true,
           '*.*': true,
-          '*.*.*': true
+          '*.*.*': true,
+          // Детализация прав на объект с зависимостью на сессию
+          //'user.find.*': {objects: [{_id: '$session.user._id'}]} // Может выбирать себя
         }
       },
       // Условие на роль (админ)

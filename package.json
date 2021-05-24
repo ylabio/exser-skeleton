@@ -1,6 +1,6 @@
 {
   "name": "node-server",
-  "version": "0.0.1",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "start": "node index.js rest-api",
@@ -13,7 +13,7 @@
   "dependencies": {
     "babel-eslint": "^10.1.0",
     "eslint": "^7.27.0",
-    "exser": "git+https://github.com/ylabio/exser.git#8ecb718ee87e6be54938b0c7524b7bda1b4f7059",
+    "exser": "^2.0.0-beta.2",
     "formidable": "^1.2.2",
     "merge-change": "^1.6.11",
     "moment": "^2.29.1",

@@ -11,7 +11,7 @@ class User extends Base {
       indexes: {
         email: [{'email': 1}, {
           'unique': true,
-          partialFilterExpression: {email: {$gt: ''}, isDeleted: false}
+          partialFilterExpression: {email: {$gt: ''}, _deleted: false}
         }]
       },
       // Свойства модели в JSONSchema. Используются функции для генерации фрагментов схем.

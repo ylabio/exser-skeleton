@@ -28,9 +28,12 @@ module.exports = async (router, services) => {
           token = authHeader[1];
         }
       }
-      let authResult = await auth.signInByToken({token});
+      let authResult = await auth.signInByToken({token, session: req.session});
       if (authResult) {
+        // Выбор юзера без контроля доступа
+        req.session.override({access: false});
         let user = await authResult.user.load();
+        req.session.revert();
         req.session.user = user;
         req.session.token = token;
         // локаль по настройкам пользователя

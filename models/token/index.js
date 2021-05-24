@@ -10,7 +10,7 @@ class Token extends Base {
       indexes: {
         value: [{'value': 1}, {
           'unique': true,
-          partialFilterExpression: {phone: {$gt: ''}, isDeleted: false}
+          partialFilterExpression: {phone: {$gt: ''}, _deleted: false}
         }]
       },
       // Свойства модели в JSONSchema. Используются функции для генерации фрагментов схем.
