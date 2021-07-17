@@ -59,6 +59,12 @@ module.exports = {
     },
   },
 
+  admin: {
+    baseUrl: '/admin',
+    views: require('./services/admin/views.js'),
+    show: ['side=menu', {path: 'page=roles/:id', id: 3}]
+  },
+
   auth: {
     siteUrl: 'http://example.front.ylab.io'
   },

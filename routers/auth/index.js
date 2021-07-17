@@ -1,4 +1,4 @@
-const {query, schema} = require('exser').utils;
+const {query, schema, errors} = require('exser').utils;
 /**
  *
  * @param router
@@ -62,7 +62,7 @@ module.exports = async (router, services) => {
     tags,
     requestBody: schema.body({schema: {$ref: '#/components/schemas/auth.signIn'}}),
     parameters: [
-      schema.paramFields({example: '_id,email,profile(name)'}),
+      schema.paramFields({example: '*'}),
       schema.paramLang({}),
     ],
     responses: {
@@ -110,6 +110,42 @@ module.exports = async (router, services) => {
     }
   }, async (req/*, res/*, next*/) => {
     return await auth.signOut({
+      session: req.session
+    });
+  });
+
+  /**
+   * Выбор "себя"
+   */
+  router.get('/auth/self', {
+    action: 'auth.self',
+    summary: 'Выбор текущего пользователя',
+    description: 'Пользователь по токену',
+    tags,
+    parameters: [
+      schema.paramFields({}),
+      schema.paramLang({}),
+    ],
+    responses: {
+      200: schema.bodyResult({schema: {$ref: '#/components/schemas/storage.user'}}),
+      404: schema.bodyError({description: 'Not Found'})
+    }
+  }, async (req/*, res*/) => {
+
+    // Данные для формирования поискового фильтра
+    let search = {id: req.params.id};
+
+    // Идентификатор из сессии
+    if (req.session.user && req.session.user._id) {
+      search.id = req.session.user._id
+    } else {
+      throw new errors.NotFound();
+    }
+
+    return await storage.get('user').findOne({
+      filter: query.makeFilter(search, {
+        id: {cond: 'eq', type: 'ObjectId', fields: ['_id']}
+      }),
       session: req.session
     });
   });

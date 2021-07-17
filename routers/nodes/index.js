@@ -71,7 +71,7 @@ module.exports = async (router, services) => {
         skip: req.query.skip,
         session: req.session,
       }),
-      count: query.inFields(req.query.fields, 'items.count')
+      count: query.inFields(req.query.fields, 'count')
         ? await nodes.findCount({filter, session: req.session})
         : null
     };

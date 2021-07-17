@@ -52,7 +52,7 @@ module.exports = async (router, services) => {
         skip: req.query.skip,
         session: req.session,
       }),
-      count: query.inFields(req.query.fields, 'items.count')
+      count: query.inFields(req.query.fields, 'count')
         ? await users.findCount({filter, session: req.session})
         : null
     };
@@ -85,9 +85,9 @@ module.exports = async (router, services) => {
     let search = {id: req.params.id};
 
     // Идентификатор из сессии
-    if (req.params.id === 'self') {
+    if (search.id === 'self') {
       if (req.session.user && req.session.user._id) {
-        search.self = req.session.user._id
+        search.id = req.session.user._id
       } else {
         throw new errors.NotFound();
       }

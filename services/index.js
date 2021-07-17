@@ -37,4 +37,11 @@ module.exports = class MyServices extends Services {
     return this.import(__dirname + '/auth', params);
   }
 
+  /**
+   * @returns {Promise<AdminService>}
+   */
+  async getAdmin(params) {
+    return this.import(__dirname + '/admin', params);
+  }
+
 };
