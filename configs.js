@@ -6,7 +6,7 @@ module.exports = {
 
   'rest-api': {
     host: 'localhost',
-    port: 8130,
+    port: 8150,
     path: '/api/v1',
     routers: require('./routers'),
     cors: {
@@ -17,7 +17,7 @@ module.exports = {
        * - '*' - все хосты
        */
       origin: [
-        'http://localhost:8131', // client host
+        'http://localhost:8151', // client host
       ]
     },
   },
@@ -26,7 +26,7 @@ module.exports = {
     db: {
       //url: 'mongodb://user:passw@localhost:27017', // Может быть строкой
       url: {
-        host: process.env.MONGO_HOST || 'localhost',
+        host: process.env.MONGO_HOST || '0.0.0.0',
         port: process.env.MONGO_PORT || '27017',
         user: process.env.MONGO_USER || '',
         password: process.env.MONGO_PWD || '',
